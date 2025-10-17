@@ -13,7 +13,7 @@ USE banque;
 CREATE TABLE CLIENT (
 	id_client CHAR(50) PRIMARY KEY,
 	nom VARCHAR(50) NOT NULL,
-	prenom VARCHAR(50) NOT NULL,
+	prenom VARCHAR(50),
 	date_naissance DATE NOT NULL,
 	lieu_naissance VARCHAR(50) NOT NULL,
 	nationalite VARCHAR(50) NOT NULL,
