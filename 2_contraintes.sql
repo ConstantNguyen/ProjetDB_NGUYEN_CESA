@@ -4,8 +4,6 @@
 -- Script des contraintes de validations
 -- =========================================
 
-
-
 -- =========================================
 -- 			TABLE CLIENT
 -- =========================================
@@ -129,10 +127,5 @@ BEGIN
 END;
 // 
 
--- =========================================
--- 			TABLE POSSEDE
--- =========================================
-ALTER TABLE POSSEDE
-ADD CONSTRAINT chk_possede_client_compte CHECK (id_client IS NOT NULL AND id_compte IS NOT NULL AND id_carte_local IS NOT NULL);
 
 

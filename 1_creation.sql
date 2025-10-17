@@ -89,7 +89,9 @@ CREATE TABLE COMPTE (
     plafond_decouvert DECIMAL(15,2) NOT NULL,
     taux_interet_applicable VARCHAR(50) NOT NULL,
     id_transaction CHAR(50),
-    FOREIGN KEY (id_transaction) REFERENCES TRANSACTION(id_transaction)
+    FOREIGN KEY (id_transaction) REFERENCES TRANSACTION(id_transaction) 
+		ON DELETE SET NULL
+        ON UPDATE CASCADE
 );
 
 -- =========================================================
@@ -106,6 +108,8 @@ CREATE TABLE CREDIT (
     statut_credit VARCHAR(50) NOT NULL,
     id_compte CHAR(50) NOT NULL,
     FOREIGN KEY (id_compte) REFERENCES COMPTE(id_compte)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
 -- =========================================================
@@ -123,6 +127,9 @@ CREATE TABLE CARTE (
     id_compte CHAR(50),
     PRIMARY KEY (id_compte, id_carte_local),
     FOREIGN KEY (id_compte) REFERENCES COMPTE(id_compte)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE
+		
 );
 
 
@@ -139,8 +146,12 @@ CREATE TABLE AFFECTATION_CONSEILLER  (
     numero_pan_tokenise VARCHAR(50),
     nombre_tentatives_PIN_erronees INT,
     PRIMARY KEY (id_client, id_employe),
-    FOREIGN KEY (id_client) REFERENCES CLIENT(id_client), 
+    FOREIGN KEY (id_client) REFERENCES CLIENT(id_client)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE,
     FOREIGN KEY (id_employe) REFERENCES EMPLOYE(id_employe)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
 -- =========================================================
@@ -151,8 +162,12 @@ CREATE TABLE SUPERVISION   (
     date_debut_supervision DATE NOT NULL,
     id_employe_1 CHAR(50),
     PRIMARY KEY (id_employe, id_employe_1),
-    FOREIGN KEY (id_employe) REFERENCES EMPLOYE(id_employe), 
+    FOREIGN KEY (id_employe) REFERENCES EMPLOYE(id_employe)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE, 
     FOREIGN KEY (id_employe_1) REFERENCES EMPLOYE(id_employe)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
 
@@ -165,8 +180,12 @@ CREATE TABLE TENANCE    (
     date_debut_titularite DATE NOT NULL,
     type_titulaire VARCHAR(50),
     PRIMARY KEY (id_client, id_compte),
-    FOREIGN KEY (id_client) REFERENCES CLIENT(id_client), 
+    FOREIGN KEY (id_client) REFERENCES CLIENT(id_client)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE, 
     FOREIGN KEY (id_compte) REFERENCES COMPTE(id_compte)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
 
@@ -178,8 +197,12 @@ CREATE TABLE POSSEDE    (
     id_compte CHAR(50),
     id_carte_local CHAR(50),
     PRIMARY KEY (id_client, id_compte, id_carte_local),
-    FOREIGN KEY (id_client) REFERENCES CLIENT(id_client),
+    FOREIGN KEY (id_client) REFERENCES CLIENT(id_client)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE,
     FOREIGN KEY (id_compte, id_carte_local) REFERENCES CARTE(id_compte, id_carte_local)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
 
@@ -190,8 +213,12 @@ CREATE TABLE CREDITE     (
     id_compte CHAR(50),
     id_transaction CHAR(50),
     PRIMARY KEY (id_compte, id_transaction),
-    FOREIGN KEY (id_compte) REFERENCES COMPTE(id_compte),
+    FOREIGN KEY (id_compte) REFERENCES COMPTE(id_compte)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE,
     FOREIGN KEY (id_transaction) REFERENCES TRANSACTION(id_transaction)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
 
@@ -202,8 +229,12 @@ CREATE TABLE SOUSCRIRE     (
     id_client CHAR(50),
     id_credit CHAR(50),
     PRIMARY KEY (id_client, id_credit),
-    FOREIGN KEY (id_client) REFERENCES CLIENT(id_client),
+    FOREIGN KEY (id_client) REFERENCES CLIENT(id_client)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE,
     FOREIGN KEY (id_credit) REFERENCES CREDIT(id_credit)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
 
@@ -214,8 +245,12 @@ CREATE TABLE GARANTIR     (
     id_credit CHAR(50),
     id_garant CHAR(50),
     PRIMARY KEY (id_credit, id_garant),
-    FOREIGN KEY (id_credit) REFERENCES CREDIT(id_credit),
+    FOREIGN KEY (id_credit) REFERENCES CREDIT(id_credit)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE,
     FOREIGN KEY (id_garant) REFERENCES GARANT(id_garant)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
 
@@ -233,9 +268,15 @@ CREATE TABLE AUTORISATION      (
     resultat_autorisation VARCHAR(50),
     motif_rejet VARCHAR(50),
     PRIMARY KEY (id_employe, id_transaction, id_compte, id_carte_local),
-    FOREIGN KEY (id_employe) REFERENCES EMPLOYE(id_employe),
-    FOREIGN KEY (id_transaction) REFERENCES TRANSACTION(id_transaction),
+    FOREIGN KEY (id_employe) REFERENCES EMPLOYE(id_employe)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE,
+    FOREIGN KEY (id_transaction) REFERENCES TRANSACTION(id_transaction)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE,
     FOREIGN KEY (id_compte, id_carte_local) REFERENCES CARTE(id_compte, id_carte_local)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
 
 -- =========================================================
@@ -245,6 +286,10 @@ CREATE TABLE GERE      (
     id_employe CHAR(50),
     id_credit CHAR(50),
     PRIMARY KEY (id_employe, id_credit),
-    FOREIGN KEY (id_employe) REFERENCES EMPLOYE(id_employe),
+    FOREIGN KEY (id_employe) REFERENCES EMPLOYE(id_employe)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE,
     FOREIGN KEY (id_credit) REFERENCES CREDIT(id_credit)
+		ON DELETE CASCADE
+        ON UPDATE CASCADE
 );
