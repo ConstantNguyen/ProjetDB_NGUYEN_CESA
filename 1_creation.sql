@@ -3,6 +3,10 @@
 -- Mini projet sur les banques 
 -- =========================================
 
+DROP SCHEMA if exists banque; 
+CREATE SCHEMA if not exists banque  ;
+USE banque;
+
 -- =========================================
 -- 			TABLE CLIENT
 -- =========================================
@@ -116,7 +120,7 @@ CREATE TABLE CARTE (
     plafond_paiement_periodique DECIMAL(15,2) NOT NULL,
     numero_pan_tokenise VARCHAR(50),
     nombre_tentatives_PIN_erronees INT,
-    id_compte CHAR(50) not null
+    id_compte CHAR(50),
     PRIMARY KEY (id_compte, id_carte_local),
     FOREIGN KEY (id_compte) REFERENCES COMPTE(id_compte)
 );
