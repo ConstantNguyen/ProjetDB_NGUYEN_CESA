@@ -16,6 +16,9 @@ ADD CONSTRAINT chk_statut_KYC CHECK (statut_KYC IN ('NON_VERIFIER','EN_COURS','V
 ADD CONSTRAINT chk_indicateur_AML CHECK(indicateur_AML IN('OUI','NON'));
 DROP TRIGGER IF EXISTS trg_check_date_naissance;
 
+/** 
+Ne pouvant pas utiliser la fonction CURDATE() dans un check nous avons opte pour un trigger dans le bu de verifier les dates.
+**/
 DELIMITER //
 CREATE TRIGGER trg_chk_date_naissance 
 BEFORE INSERT ON CLIENT
@@ -46,7 +49,7 @@ CREATE TRIGGER trg_chk_date_ouverture
 BEFORE INSERT ON COMPTE
 FOR EACH ROW
 BEGIN
-  IF NEW.date_ouverture > CURDATE() THEN
+  IF NEW.date_ouverture >= CURDATE() THEN
     SIGNAL SQLSTATE '45000';
   END IF;
 END;
@@ -60,18 +63,6 @@ END;
 ALTER TABLE EMPLOYE
 DROP CHECK chk_role,
 ADD CONSTRAINT chk_role CHECK  (role IN ('CONSEILLER', 'DIRECTEUR', 'GESTIONNAIRE', 'CAISSIER', 'AUTRE'));
-
-DELIMITER //
-CREATE TRIGGER trg_chk_date_embauche
-BEFORE INSERT ON EMPLOYE
-FOR EACH ROW
-BEGIN
-  IF NEW.date_embauche > CURDATE() THEN
-    SIGNAL SQLSTATE '45000';
-  END IF;
-END;
-// 
-
 
 
 -- =========================================
@@ -90,7 +81,7 @@ CREATE TRIGGER trg_chk_date_expiration
 BEFORE INSERT ON CARTE
 FOR EACH ROW
 BEGIN
-  IF NEW.date_expiration > CURDATE() THEN
+  IF NEW.date_expiration < CURDATE() THEN
     SIGNAL SQLSTATE '45000';
   END IF;
 END;
@@ -115,17 +106,6 @@ ALTER TABLE TRANSACTION
 ADD CONSTRAINT chk_montant_transaction CHECK (montant > 0),
 ADD CONSTRAINT chk_type_transaction CHECK (type_transaction IN ('Virement', 'Retrait', 'Depot', 'Paiement', 'Autre')),
 ADD CONSTRAINT chk_statut_transaction CHECK (statut_transaction IN ('En attente', 'Terminee', 'Annulee'));
-
-DELIMITER //
-CREATE TRIGGER trg_chk_date
-BEFORE INSERT ON TRANSACTION
-FOR EACH ROW
-BEGIN
-  IF NEW.date_ > CURDATE() THEN
-    SIGNAL SQLSTATE '45000';
-  END IF;
-END;
-// 
 
 
 
