@@ -140,7 +140,7 @@ CREATE TABLE AFFECTATION_CONSEILLER  (
     id_client CHAR(50),
     id_employe VARCHAR(50),
     date_debut_affectation DATE NOT NULL,
-    date_fin_affectation DATE NOT NULL,
+    date_fin_affectation DATE,
     plafond_retrait_quotidien DECIMAL(15,2),
     plafond_paiement_periodique DECIMAL(15,2),
     numero_pan_tokenise VARCHAR(50),
