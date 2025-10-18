@@ -1,140 +1,138 @@
 -- =========================================
 -- 4_interrogation.sql
 -- =========================================
-
 USE banque;
-
-
-/**
 
 -- ===============================
 -- 1. Projections et sélections
 -- ===============================
 
--- a) Liste des clients avec email et téléphone
-SELECT nom, prenom, email, telephone_principal
-FROM CLIENT;
-
--- b) Clients avec statut KYC "NON_VERIFIER" ou "EN_COURS"
-SELECT *
+-- 1. Liste des clients utilisant un email Gmail
+SELECT id_client, nom, prenom, email
 FROM CLIENT
-WHERE statut_KYC IN ('NON_VERIFIER','EN_COURS');
+WHERE email LIKE '%@gmail.com'
+ORDER BY nom;
 
--- c) Transactions entre 1000 et 5000
-SELECT *
-FROM TRANSACTION
-WHERE montant BETWEEN 1000 AND 5000;
+-- 2. Clients nés entre 1980 et 2000
+SELECT id_client, nom, prenom, date_naissance
+FROM CLIENT
+WHERE date_naissance BETWEEN '1980-01-01' AND '2000-12-31';
 
--- d) Comptes en devise 'EUR' triés par solde disponible décroissant
+-- 3. Comptes dont le solde disponible dépasse 10 000 €
 SELECT id_compte, solde_disponible, devise_compte
 FROM COMPTE
-WHERE devise_compte = 'EUR'
+WHERE solde_disponible > 10000
 ORDER BY solde_disponible DESC;
 
--- e) Clients dont l'email contient '@gmail.com'
-SELECT *
+-- 4. Employés ayant été embauchés après 2020
+SELECT nom, prenom, date_embauche, role
+FROM EMPLOYE
+WHERE date_embauche > '2020-01-01';
+
+-- 5. Clients dont le statut KYC est en cours de vérification
+SELECT nom, prenom, statut_KYC
 FROM CLIENT
+WHERE statut_KYC IN ('EN_COURS', 'NON_VERIFIER');
+
 WHERE email LIKE '%@gmail.com';
 
 -- ===============================
 -- 2. Fonctions d’agrégation avec GROUP BY et HAVING
 -- ===============================
 
--- a) Nombre de clients par nationalité
-SELECT nationalite, COUNT(*) AS nb_clients
-FROM CLIENT
-GROUP BY nationalite;
+-- 1. Montant total des transactions par type
+SELECT type_transaction, SUM(montant) AS total_montant
+FROM TRANSACTION
+GROUP BY type_transaction;
 
--- b) Solde moyen par type de compte
+-- 2. Moyenne du solde disponible par type de compte
 SELECT type_compte, AVG(solde_disponible) AS solde_moyen
 FROM COMPTE
 GROUP BY type_compte;
 
--- c) Nombre de transactions par type et statut
-SELECT type_transaction, statut_transaction, COUNT(*) AS nb_transactions
-FROM TRANSACTION
-GROUP BY type_transaction, statut_transaction;
+-- 3. Nombre de clients par statut KYC
+SELECT statut_KYC, COUNT(*) AS nb_clients
+FROM CLIENT
+GROUP BY statut_KYC;
 
--- d) Total des crédits en cours par compte
-SELECT id_compte, SUM(montant_initial) AS total_credits
+-- 4. Moyenne du taux nominal des crédits par statut
+SELECT statut_credit, AVG(taux_nominal_annuel) AS taux_moyen
 FROM CREDIT
-WHERE statut_credit = 'EN_COURS'
-GROUP BY id_compte;
+GROUP BY statut_credit;
 
--- e) Agences avec plus de 5 employés
+-- 5. Nombre d’employés par agence (avec filtrage HAVING)
 SELECT id_agence, COUNT(*) AS nb_employes
 FROM EMPLOYE
 GROUP BY id_agence
-HAVING COUNT(*) > 5;
+HAVING COUNT(*) > 3;
 
 -- ===============================
 -- 3. Jointures internes et externes
 -- ===============================
 
--- a) Liste des clients avec leurs comptes
-SELECT c.nom, c.prenom, co.id_compte, co.type_compte
-FROM CLIENT c
-JOIN TENANCE t ON c.id_client = t.id_client
-JOIN COMPTE co ON t.id_compte = co.id_compte;
+-- 1. Liste des clients avec leurs comptes
+SELECT C.nom, C.prenom, CP.id_compte, CP.type_compte
+FROM CLIENT C
+JOIN TENANCE T ON C.id_client = T.id_client
+JOIN COMPTE CP ON T.id_compte = CP.id_compte;
 
--- b) Clients et leurs cartes
-SELECT cl.nom, cl.prenom, ca.id_carte_local, ca.type_carte, ca.statut_carte
-FROM CLIENT cl
-JOIN POSSEDE p ON cl.id_client = p.id_client
-JOIN CARTE ca ON p.id_compte = ca.id_compte AND p.id_carte_local = ca.id_carte_local;
+-- 2. Comptes et leurs cartes associées
+SELECT CP.id_compte, CA.id_carte_local, CA.type_carte, CA.statut_carte
+FROM COMPTE CP
+LEFT JOIN CARTE CA ON CP.id_compte = CA.id_compte;
 
--- c) Employés et agences
-SELECT e.nom, e.prenom, a.nom_agence
-FROM EMPLOYE e
-LEFT JOIN AGENCE a ON e.id_agence = a.id_agence;
+-- 3. Employés et agences associées
+SELECT E.nom, E.prenom, A.nom_agence
+FROM EMPLOYE E
+JOIN AGENCE A ON E.id_agence = A.id_agence;
 
--- d) Crédit et compte associé
-SELECT cr.id_credit, cr.montant_initial, co.id_compte, co.type_compte
-FROM CREDIT cr
-JOIN COMPTE co ON cr.id_compte = co.id_compte;
+-- 4. Clients et leurs crédits
+SELECT C.nom, C.prenom, CR.id_credit, CR.montant_initial, CR.statut_credit
+FROM CLIENT C
+JOIN SOUSCRIRE S ON C.id_client = S.id_client
+JOIN CREDIT CR ON S.id_credit = CR.id_credit;
 
--- e) Clients et crédits garantis
-SELECT cl.nom, cl.prenom, cr.id_credit, g.type_garant
-FROM CLIENT cl
-JOIN SOUSCRIRE sc ON cl.id_client = sc.id_client
-JOIN CREDIT cr ON sc.id_credit = cr.id_credit
-JOIN GARANTIR gr ON cr.id_credit = gr.id_credit
-JOIN GARANT g ON gr.id_garant = g.id_garant;
+-- 5. Transactions liées à des comptes
+SELECT T.id_transaction, T.date_, T.type_transaction, C.id_compte, C.solde_disponible
+FROM TRANSACTION T
+JOIN CREDITE CRD ON T.id_transaction = CRD.id_transaction
+JOIN COMPTE C ON CRD.id_compte = C.id_compte;
+
 
 -- ===============================
 -- 4. Requêtes imbriquées (NOT IN, EXISTS, ANY, ALL)
 -- ===============================
 
--- a) Clients sans compte
-SELECT *
-FROM CLIENT
-WHERE id_client NOT IN (SELECT id_client FROM TENANCE);
-
--- b) Comptes sans transactions
-SELECT *
-FROM COMPTE
-WHERE id_compte NOT IN (SELECT id_compte FROM CREDITE);
-
--- c) Clients ayant au moins un crédit supérieur à 10000
-SELECT *
+-- 1. Clients ayant au moins un crédit en cours
+SELECT nom, prenom
 FROM CLIENT
 WHERE id_client IN (
-    SELECT id_client
-    FROM SOUSCRIRE s
-    JOIN CREDIT c ON s.id_credit = c.id_credit
-    WHERE c.montant_initial > 10000
+  SELECT id_client FROM SOUSCRIRE S
+  JOIN CREDIT C ON S.id_credit = C.id_credit
+  WHERE C.statut_credit = 'EN_COURS'
 );
 
--- d) Cartes expirées
-SELECT *
-FROM CARTE
-WHERE date_expiration < CURDATE();
+-- 2. Clients sans aucun crédit
+SELECT nom, prenom
+FROM CLIENT
+WHERE id_client NOT IN (SELECT id_client FROM SOUSCRIRE);
 
--- e) Employés supervisant quelqu’un
-SELECT *
-FROM EMPLOYE e
+-- 3. Comptes dont le solde est supérieur à la moyenne
+SELECT id_compte, solde_disponible
+FROM COMPTE
+WHERE solde_disponible > (SELECT AVG(solde_disponible) FROM COMPTE);
+
+-- 4. Employés supervisant d’autres employés
+SELECT nom, prenom
+FROM EMPLOYE E
 WHERE EXISTS (
-    SELECT 1 FROM SUPERVISION s
-    WHERE s.id_employe = e.id_employe
+  SELECT 1 FROM SUPERVISION S WHERE S.id_employe = E.id_employe
 );
-**/
+
+-- 5. Crédits dont la durée est plus courte que tous les crédits en cours
+SELECT id_credit, duree_mois
+FROM CREDIT
+WHERE duree_mois < ALL (
+  SELECT duree_mois FROM CREDIT WHERE statut_credit = 'EN_COURS'
+);
+
